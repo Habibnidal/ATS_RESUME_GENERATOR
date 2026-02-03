@@ -1,19 +1,33 @@
 const express = require("express");
 const fs = require("fs");
 const path = require("path");
-const puppeteer = require("puppeteer");
+
+const puppeteer = require("puppeteer-core");
+const chromium = require("@sparticuz/chromium");
 
 const app = express();
 
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static("public"));
 
+/* ---------- HEALTH CHECK ---------- */
+app.get("/health", (req, res) => {
+  res.status(200).send("OK");
+});
+
+/* ---------- LOADER (OPTIONAL) ---------- */
 app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "public", "resume.html"));
 });
 
+/* ---------- PDF GENERATION ---------- */
 app.post("/generate-resume", async (req, res) => {
   try {
+    const section = (title, content) =>
+      content && content.trim()
+        ? `<h3>${title}</h3><p>${content.replace(/\n/g, "<br>")}</p>`
+        : "";
+
     const {
       name,
       title,
@@ -41,41 +55,36 @@ app.post("/generate-resume", async (req, res) => {
       edu_desc = []
     } = req.body;
 
-    const escapeHTML = (str = "") =>
-      str.replace(/&/g, "&amp;")
-         .replace(/</g, "&lt;")
-         .replace(/>/g, "&gt;");
-
-    const section = (title, body) =>
-      body ? `<h3>${title}</h3>${body}` : "";
-
-    /* ---------- EXPERIENCE / TRAINING / CERT ---------- */
+    /* ---------- EXPERIENCE / TRAINING / CERTIFICATION ---------- */
     let experienceHTML = "";
 
     if (exp_section_type !== "remove") {
-      exp_role.forEach((_, i) => {
-        if (exp_role[i] || exp_desc[i]) {
+      exp_role.forEach((role, i) => {
+        if (role || exp_desc[i]) {
           experienceHTML += `
-            <div class="item">
-              <strong>${escapeHTML(exp_role[i] || "")}</strong><br>
-              <small>${escapeHTML(exp_start[i] || "")}${exp_end[i] ? " - " + escapeHTML(exp_end[i]) : ""}</small>
-              <p>${escapeHTML(exp_desc[i] || "").replace(/\n/g, "<br>")}</p>
+            <div>
+              <strong>${role || ""}</strong><br>
+              <small>${exp_start[i] || ""} - ${exp_end[i] || ""}</small>
+              <p>${(exp_desc[i] || "").replace(/\n/g, "<br>")}</p>
             </div>
           `;
         }
       });
+
+      if (experienceHTML) {
+        experienceHTML = `<h3>${exp_section_type}</h3>${experienceHTML}`;
+      }
     }
 
     /* ---------- PROJECTS ---------- */
     let projectsHTML = "";
-
-    project_name.forEach((_, i) => {
-      if (project_name[i] || project_desc[i]) {
+    project_name.forEach((p, i) => {
+      if (p || project_desc[i] || project_github[i]) {
         projectsHTML += `
-          <div class="item">
-            <strong>${escapeHTML(project_name[i] || "")}</strong><br>
-            <small>${escapeHTML(project_start[i] || "")}${project_end[i] ? " - " + escapeHTML(project_end[i]) : ""}</small>
-            <p>${escapeHTML(project_desc[i] || "").replace(/\n/g, "<br>")}</p>
+          <div>
+            <strong>${p || ""}</strong><br>
+            <small>${project_start[i] || ""} - ${project_end[i] || ""}</small>
+            <p>${(project_desc[i] || "").replace(/\n/g, "<br>")}</p>
             ${
               project_github[i]
                 ? `<a href="${project_github[i]}">${project_github[i]}</a>`
@@ -86,94 +95,77 @@ app.post("/generate-resume", async (req, res) => {
       }
     });
 
+    if (projectsHTML) {
+      projectsHTML = `<h3>Projects</h3>${projectsHTML}`;
+    }
+
     /* ---------- EDUCATION ---------- */
     let educationHTML = "";
-
-    edu_name.forEach((_, i) => {
-      if (edu_name[i] || edu_desc[i]) {
+    edu_name.forEach((e, i) => {
+      if (e || edu_desc[i]) {
         educationHTML += `
-          <div class="item">
-            <strong>${escapeHTML(edu_name[i] || "")}</strong><br>
-            <small>${escapeHTML(edu_start[i] || "")}${edu_end[i] ? " - " + escapeHTML(edu_end[i]) : ""}</small>
-            <p>${escapeHTML(edu_desc[i] || "").replace(/\n/g, "<br>")}</p>
+          <div>
+            <strong>${e || ""}</strong><br>
+            <small>${edu_start[i] || ""} - ${edu_end[i] || ""}</small>
+            <p>${(edu_desc[i] || "").replace(/\n/g, "<br>")}</p>
           </div>
         `;
       }
     });
 
-    /* ---------- LOAD TEMPLATE ---------- */
-    let template = fs.readFileSync("resume_template.html", "utf8");
+    if (educationHTML) {
+      educationHTML = `<h3>Education</h3>${educationHTML}`;
+    }
 
-    template = template
-      .replace("{{name}}", escapeHTML(name || ""))
-      .replace("{{title}}", escapeHTML(title || ""))
+    /* ---------- LOAD TEMPLATE ---------- */
+    let html = fs.readFileSync("resume_template.html", "utf8");
+
+    html = html
+      .replace("{{name}}", name || "")
+      .replace("{{title}}", title || "")
       .replace(
         "{{contact}}",
         [location, email, phone].filter(Boolean).join(" | ")
       )
-      .replace(
-        "{{summary}}",
-        summary ? section("Summary", `<p>${escapeHTML(summary).replace(/\n/g, "<br>")}</p>`) : ""
-      )
-      .replace(
-        "{{experience}}",
-        exp_section_type !== "remove"
-          ? section(exp_section_type || "Experience", experienceHTML)
-          : ""
-      )
-      .replace(
-        "{{skills}}",
-        skills ? section("Skills", `<p>${escapeHTML(skills)}</p>`) : ""
-      )
-      .replace(
-        "{{projects}}",
-        projectsHTML ? section("Projects", projectsHTML) : ""
-      )
-      .replace(
-        "{{education}}",
-        educationHTML ? section("Education", educationHTML) : ""
-      );
+      .replace("{{summary}}", section("Summary", summary))
+      .replace("{{skills}}", section("Skills", skills))
+      .replace("{{experience}}", experienceHTML)
+      .replace("{{projects}}", projectsHTML)
+      .replace("{{education}}", educationHTML);
 
-    /* ---------- PDF ---------- */
+    /* ---------- CHROMIUM LAUNCH (PRODUCTION SAFE) ---------- */
     const browser = await puppeteer.launch({
-      headless: "new",
-      args: [
-        "--no-sandbox",
-        "--disable-setuid-sandbox",
-        "--disable-dev-shm-usage",
-        "--disable-gpu",
-        "--no-zygote",
-        "--single-process"
-      ]
+      args: chromium.args,
+      defaultViewport: chromium.defaultViewport,
+      executablePath: await chromium.executablePath(),
+      headless: chromium.headless
     });
 
     const page = await browser.newPage();
-    await page.setContent(template, { waitUntil: "networkidle0" });
+    await page.setContent(html, { waitUntil: "networkidle0" });
 
-    const filePath = path.join(__dirname, "resume.pdf");
-
-    await page.pdf({
-      path: filePath,
+    const pdfBuffer = await page.pdf({
       format: "A4",
-      printBackground: true,
-      margin: {
-        top: "20mm",
-        bottom: "20mm",
-        left: "15mm",
-        right: "15mm"
-      }
+      printBackground: true
     });
 
     await browser.close();
 
-    res.download(filePath, "Resume.pdf");
+    res.set({
+      "Content-Type": "application/pdf",
+      "Content-Disposition": "attachment; filename=resume.pdf"
+    });
+
+    res.send(pdfBuffer);
 
   } catch (err) {
-    console.error(err);
+    console.error("RESUME ERROR 👉", err);
     res.status(500).send("Error generating resume");
   }
 });
 
-app.listen(3000, () => {
-  console.log("✅ Resume Generator running at http://localhost:3000");
+/* ---------- SERVER ---------- */
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log(`Resume server running on port ${PORT}`);
 });

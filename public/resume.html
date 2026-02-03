@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>ATS-Friendly Resume Generator</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body { 
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #0a4d3c 0%, #1a5f4f 25%, #0d3d2f 50%, #1e6b56 75%, #0a4d3c 100%);
+      background-size: 400% 400%;
+      animation: gradientShift 15s ease infinite;
+      min-height: 100vh;
+      padding: 40px 20px;
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    @keyframes gradientShift {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      width: 600px;
+      height: 600px;
+      background: radial-gradient(circle, rgba(52, 211, 153, 0.15) 0%, transparent 70%);
+      border-radius: 50%;
+      top: -300px;
+      right: -300px;
+      animation: pulse 8s ease-in-out infinite;
+    }
+
+    body::after {
+      content: '';
+      position: fixed;
+      width: 500px;
+      height: 500px;
+      background: radial-gradient(circle, rgba(16, 185, 129, 0.12) 0%, transparent 70%);
+      border-radius: 50%;
+      bottom: -250px;
+      left: -250px;
+      animation: pulse 10s ease-in-out infinite reverse;
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(1) translate(0, 0); opacity: 1; }
+      50% { transform: scale(1.1) translate(20px, 20px); opacity: 0.8; }
+    }
+
+    h2 {
+      text-align: center;
+      color: #d1fae5;
+      font-size: 2.5em;
+      margin-bottom: 30px;
+      text-shadow: 
+        0 0 20px rgba(52, 211, 153, 0.5),
+        0 0 40px rgba(16, 185, 129, 0.3),
+        0 4px 8px rgba(0, 0, 0, 0.5);
+      letter-spacing: 2px;
+      position: relative;
+      z-index: 1;
+      animation: glow 3s ease-in-out infinite;
+    }
+
+    @keyframes glow {
+      0%, 100% { text-shadow: 0 0 20px rgba(52, 211, 153, 0.5), 0 0 40px rgba(16, 185, 129, 0.3), 0 4px 8px rgba(0, 0, 0, 0.5); }
+      50% { text-shadow: 0 0 30px rgba(52, 211, 153, 0.8), 0 0 60px rgba(16, 185, 129, 0.5), 0 4px 8px rgba(0, 0, 0, 0.5); }
+    }
+
+    form {
+      max-width: 800px;
+      margin: 0 auto;
+      background: linear-gradient(145deg, rgba(17, 24, 39, 0.95) 0%, rgba(31, 41, 55, 0.92) 100%);
+      padding: 40px;
+      border-radius: 30px;
+      box-shadow: 
+        0 25px 70px rgba(0, 0, 0, 0.6),
+        0 0 0 1px rgba(52, 211, 153, 0.2),
+        inset 0 1px 0 rgba(52, 211, 153, 0.1);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(52, 211, 153, 0.15);
+      position: relative;
+      z-index: 1;
+      transform-style: preserve-3d;
+    }
+
+    form::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: linear-gradient(90deg, #10b981, #34d399, #6ee7b7, #34d399, #10b981);
+      background-size: 200% 100%;
+      border-radius: 30px 30px 0 0;
+      animation: shimmer 3s linear infinite;
+    }
+
+    @keyframes shimmer {
+      0% { background-position: -200% 0; }
+      100% { background-position: 200% 0; }
+    }
+
+    form::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-image: 
+        radial-gradient(circle, rgba(52, 211, 153, 0.05) 1px, transparent 1px);
+      background-size: 50px 50px;
+      border-radius: 30px;
+      pointer-events: none;
+      opacity: 0.3;
+    }
+
+    input, textarea { 
+      width: 100%;
+      margin-bottom: 15px;
+      padding: 14px 18px;
+      border: 2px solid rgba(52, 211, 153, 0.3);
+      border-radius: 12px;
+      font-size: 15px;
+      transition: all 0.3s ease;
+      background: rgba(17, 24, 39, 0.6);
+      color: #d1fae5;
+      box-shadow: 
+        0 4px 6px rgba(0, 0, 0, 0.3),
+        inset 0 1px 2px rgba(52, 211, 153, 0.1);
+      transform: translateZ(10px);
+      font-family: inherit;
+    }
+
+    input::placeholder, textarea::placeholder {
+      color: rgba(209, 250, 229, 0.5);
+    }
+
+    input:focus, textarea:focus {
+      outline: none;
+      background: rgba(17, 24, 39, 0.8);
+      border-color: #34d399;
+      box-shadow: 
+        0 0 0 3px rgba(52, 211, 153, 0.2),
+        0 8px 20px rgba(52, 211, 153, 0.3),
+        inset 0 1px 2px rgba(52, 211, 153, 0.2);
+      transform: translateZ(20px) scale(1.02);
+    }
+
+    textarea { 
+      height: 90px;
+      resize: vertical;
+    }
+
+    button { 
+      padding: 12px 28px;
+      margin-top: 10px;
+      border: none;
+      border-radius: 12px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+      position: relative;
+      overflow: hidden;
+    }
+
+    button::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 0;
+      height: 0;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.3);
+      transform: translate(-50%, -50%);
+      transition: width 0.6s, height 0.6s;
+    }
+
+    button:hover::before {
+      width: 300px;
+      height: 300px;
+    }
+
+    button:active {
+      transform: translateY(2px);
+      box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+    }
+
+    h3 {
+      color: #6ee7b7;
+      margin: 30px 0 20px 0;
+      font-size: 1.6em;
+      text-shadow: 
+        0 2px 8px rgba(110, 231, 183, 0.4),
+        0 0 20px rgba(52, 211, 153, 0.2);
+      position: relative;
+      padding-left: 20px;
+    }
+
+    h3::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 6px;
+      height: 30px;
+      background: linear-gradient(180deg, #10b981, #34d399);
+      border-radius: 3px;
+      box-shadow: 0 0 10px rgba(52, 211, 153, 0.5);
+    }
+
+    .box {
+      background: linear-gradient(145deg, rgba(17, 24, 39, 0.5) 0%, rgba(31, 41, 55, 0.4) 100%);
+      border: 2px solid rgba(52, 211, 153, 0.25);
+      padding: 25px;
+      margin-bottom: 20px;
+      border-radius: 20px;
+      box-shadow: 
+        0 10px 30px rgba(0,0,0,0.4),
+        0 1px 8px rgba(0,0,0,0.06),
+        inset 0 1px 0 rgba(52, 211, 153, 0.1);
+      position: relative;
+      transform-style: preserve-3d;
+      transition: all 0.3s ease;
+    }
+
+    .box:hover {
+      transform: translateY(-5px) translateZ(10px);
+      border-color: rgba(52, 211, 153, 0.4);
+      box-shadow: 
+        0 15px 40px rgba(0,0,0,0.5),
+        0 0 20px rgba(52, 211, 153, 0.2),
+        inset 0 1px 0 rgba(52, 211, 153, 0.15);
+    }
+
+    .remove-btn {
+      background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      cursor: pointer;
+      float: right;
+      border-radius: 10px;
+      font-weight: 600;
+      box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4);
+      position: relative;
+      z-index: 10;
+    }
+
+    .remove-btn:hover {
+      background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(239, 68, 68, 0.5);
+    }
+
+    button[type="button"]:not(.remove-btn) {
+      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+      color: white;
+      display: inline-block;
+      margin-right: 10px;
+      position: relative;
+      z-index: 1;
+    }
+
+    button[type="button"]:not(.remove-btn):hover {
+      background: linear-gradient(135deg, #059669 0%, #047857 100%);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(16, 185, 129, 0.4);
+    }
+
+    button[type="submit"] {
+      background: linear-gradient(135deg, #059669 0%, #047857 50%, #065f46 100%);
+      color: white;
+      width: 100%;
+      font-size: 18px;
+      padding: 16px;
+      margin-top: 20px;
+      position: relative;
+      z-index: 1;
+    }
+
+    button[type="submit"]::after {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+      transform: rotate(45deg);
+      animation: shine 3s infinite;
+    }
+
+    @keyframes shine {
+      0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
+      100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
+    }
+
+    button[type="submit"]:hover {
+      background: linear-gradient(135deg, #047857 0%, #065f46 50%, #064e3b 100%);
+      transform: translateY(-3px);
+      box-shadow: 
+        0 15px 40px rgba(5, 150, 105, 0.6),
+        0 0 30px rgba(16, 185, 129, 0.4);
+    }
+
+    #experience-container,
+    #projects-container,
+    #education-container {
+      position: relative;
+      z-index: 1;
+    }
+
+    /* Floating animation for section containers */
+    .box {
+      animation: subtleFloat 6s ease-in-out infinite;
+    }
+
+    .box:nth-child(2n) {
+      animation-delay: 1s;
+    }
+
+    .box:nth-child(3n) {
+      animation-delay: 2s;
+    }
+
+    @keyframes subtleFloat {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-5px); }
+    }
+
+    /* ATS Info Box Styling */
+    .ats-info-box {
+      background: linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(52, 211, 153, 0.1) 100%);
+      padding: 20px;
+      border-radius: 15px;
+      margin-bottom: 30px;
+      border-left: 5px solid #10b981;
+      box-shadow: 
+        0 4px 15px rgba(16, 185, 129, 0.3),
+        inset 0 1px 0 rgba(52, 211, 153, 0.2);
+      border: 1px solid rgba(52, 211, 153, 0.3);
+    }
+
+    .ats-info-box h3 {
+      color: #6ee7b7;
+      margin: 0 0 10px 0;
+      padding: 0;
+      font-size: 1.3em;
+      text-shadow: 0 2px 8px rgba(110, 231, 183, 0.4);
+    }
+
+    .ats-info-box h3::before {
+      display: none;
+    }
+
+    .ats-info-box p {
+      color: #d1fae5;
+      margin: 5px 0;
+      line-height: 1.6;
+      font-size: 14px;
+    }
+
+    .ats-info-box strong {
+      color: #a7f3d0;
+    }
+
+    /* Tips styling */
+    .tip {
+      color: #a7f3d0;
+      font-size: 13px;
+      margin-top: -10px;
+      margin-bottom: 20px;
+      text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+    }
+
+    .tip em {
+      color: #d1fae5;
+    }
+
+    /* Radio label hover effects */
+    label:has(input[type="radio"]):hover {
+      background: rgba(52, 211, 153, 0.15);
+      transform: translateX(5px);
+    }
+
+    label:has(input[type="radio"]) {
+      transition: all 0.3s ease;
+    }
+  </style>
+</head>
+<body>
+
+<h2>✨ ATS-Friendly Resume Generator</h2>
+
+<form method="POST" action="/generate-resume">
+
+  <div class="ats-info-box">
+    <h3>📊 ATS-Optimized Features</h3>
+    <p>
+      ✓ <strong>Clean formatting</strong> for perfect parsing by Applicant Tracking Systems<br>
+      ✓ <strong>Keyword-friendly</strong> structure to match job descriptions<br>
+      ✓ <strong>Standard sections</strong> recognized by all ATS software<br>
+      ✓ <strong>PDF output</strong> that maintains formatting across all systems
+    </p>
+  </div>
+
+  <input name="name" placeholder="Full Name">
+  <input name="title" placeholder="Job Title">
+  <input name="location" placeholder="Location">
+  <input name="email" placeholder="Email">
+  <input name="phone" placeholder="Phone">
+
+  <textarea name="summary" placeholder="Professional Summary (Include relevant keywords from job description)"></textarea>
+  <p class="tip">💡 <em>Tip: Use industry-specific keywords and quantifiable achievements</em></p>
+
+  <!-- SECTION TYPE SELECTOR -->
+  <div style="background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(52, 211, 153, 0.05) 100%); padding: 20px; border-radius: 15px; margin-bottom: 25px; border: 2px solid rgba(52, 211, 153, 0.25); box-shadow: 0 4px 15px rgba(16, 185, 129, 0.2);">
+    <strong style="color: #a7f3d0; font-size: 16px; display: block; margin-bottom: 12px; text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);">Select Section Type</strong>
+    <label style="display: block; color: #d1fae5; margin-bottom: 10px; cursor: pointer; padding: 8px 12px; border-radius: 8px; transition: all 0.3s ease; position: relative; padding-left: 35px;">
+      <input type="radio" name="exp_section_type" value="Experience" checked style="width: auto; margin-right: 8px; margin-bottom: 0; position: absolute; left: 8px; top: 50%; transform: translateY(-50%); accent-color: #10b981; cursor: pointer;"> Experience
+    </label>
+    <label style="display: block; color: #d1fae5; margin-bottom: 10px; cursor: pointer; padding: 8px 12px; border-radius: 8px; transition: all 0.3s ease; position: relative; padding-left: 35px;">
+      <input type="radio" name="exp_section_type" value="Training" style="width: auto; margin-right: 8px; margin-bottom: 0; position: absolute; left: 8px; top: 50%; transform: translateY(-50%); accent-color: #10b981; cursor: pointer;"> Training
+    </label>
+    <label style="display: block; color: #d1fae5; margin-bottom: 10px; cursor: pointer; padding: 8px 12px; border-radius: 8px; transition: all 0.3s ease; position: relative; padding-left: 35px;">
+      <input type="radio" name="exp_section_type" value="Certifications" style="width: auto; margin-right: 8px; margin-bottom: 0; position: absolute; left: 8px; top: 50%; transform: translateY(-50%); accent-color: #10b981; cursor: pointer;"> Certifications
+    </label>
+    <label style="display: block; color: #d1fae5; margin-bottom: 10px; cursor: pointer; padding: 8px 12px; border-radius: 8px; transition: all 0.3s ease; position: relative; padding-left: 35px;">
+      <input type="radio" name="exp_section_type" value="Training & Certifications" style="width: auto; margin-right: 8px; margin-bottom: 0; position: absolute; left: 8px; top: 50%; transform: translateY(-50%); accent-color: #10b981; cursor: pointer;"> Training & Certifications
+    </label>
+    <label style="display: block; color: #d1fae5; margin-bottom: 0; cursor: pointer; padding: 8px 12px; border-radius: 8px; transition: all 0.3s ease; position: relative; padding-left: 35px;">
+      <input type="radio" name="exp_section_type" value="remove" style="width: auto; margin-right: 8px; margin-bottom: 0; position: absolute; left: 8px; top: 50%; transform: translateY(-50%); accent-color: #ef4444; cursor: pointer;"> Remove this section
+    </label>
+  </div>
+
+  <!-- EXPERIENCE -->
+  <div id="experience-section">
+    <h3 id="experience-title">Experience</h3>
+    <p class="tip">💼 <em>Use action verbs and quantify achievements (e.g., "Increased sales by 25%")</em></p>
+  <div id="experience-container">
+
+    <div class="box">
+      <input name="exp_role[]" placeholder="Company / Role">
+      <input name="exp_start[]" placeholder="Start Date">
+      <input name="exp_end[]" placeholder="End Date">
+      <textarea name="exp_desc[]" placeholder="Experience Description"></textarea>
+    </div>
+
+  </div>
+
+  <button type="button" onclick="addExperience()">➕ Add Experience</button>
+  </div>
+
+  <h3 style="margin-top: 30px;">Skills</h3>
+  <p class="tip">🎯 <em>List both technical and soft skills. Match keywords from job posting</em></p>
+  <textarea name="skills" placeholder="Skills (e.g., Python, Project Management, Data Analysis, Leadership)"></textarea>
+
+  <!-- PROJECTS -->
+  <h3>Projects</h3>
+  <p class="tip">🚀 <em>Highlight technical skills and measurable outcomes</em></p>
+  <div id="projects-container">
+
+    <div class="box">
+      <input name="project_name[]" placeholder="Project Name">
+      <input name="project_start[]" placeholder="Start Date">
+      <input name="project_end[]" placeholder="End Date">
+      <textarea name="project_desc[]" placeholder="Project Description"></textarea>
+      <input name="project_github[]" placeholder="GitHub Link">
+    </div>
+
+  </div>
+
+  <button type="button" onclick="addProject()">➕ Add Project</button>
+
+  <!-- EDUCATION -->
+  <h3>Education</h3>
+  <p class="tip">🎓 <em>Include degrees, certifications, and relevant coursework</em></p>
+  <div id="education-container">
+
+    <div class="box">
+      <input name="edu_name[]" placeholder="Institution / Course">
+      <input name="edu_start[]" placeholder="Start Date">
+      <input name="edu_end[]" placeholder="End Date">
+      <textarea name="edu_desc[]" placeholder="Education Description"></textarea>
+    </div>
+
+  </div>
+
+  <button type="button" onclick="addEducation()">➕ Add Education</button>
+
+  <br><br>
+  <button type="submit">🎯 Generate ATS-Optimized Resume PDF</button>
+
+</form>
+
+<script>
+// Handle section type changes
+const radios = document.querySelectorAll('input[name="exp_section_type"]');
+const expSection = document.getElementById("experience-section");
+const expTitle = document.getElementById("experience-title");
+const addExpButton = document.querySelector('button[onclick="addExperience()"]');
+
+radios.forEach(r => {
+  r.addEventListener("change", () => {
+    if (r.value === "remove") {
+      expSection.style.display = "none";
+    } else {
+      expSection.style.display = "block";
+      expTitle.textContent = r.value;
+      // Update button text based on selection
+      if (r.value === "Training") {
+        addExpButton.innerHTML = "➕ Add Training";
+      } else if (r.value === "Certifications") {
+        addExpButton.innerHTML = "➕ Add Certification";
+      } else if (r.value === "Training & Certifications") {
+        addExpButton.innerHTML = "➕ Add Training/Certification";
+      } else {
+        addExpButton.innerHTML = "➕ Add Experience";
+      }
+    }
+  });
+});
+
+function addExperience() {
+  const c = document.getElementById("experience-container");
+  const d = document.createElement("div");
+  d.className = "box";
+  d.innerHTML = `
+    <button type="button" class="remove-btn" onclick="this.parentElement.remove()">✖</button>
+    <input name="exp_role[]" placeholder="Company / Role">
+    <input name="exp_start[]" placeholder="Start Date">
+    <input name="exp_end[]" placeholder="End Date">
+    <textarea name="exp_desc[]" placeholder="Experience Description"></textarea>
+  `;
+  c.appendChild(d);
+}
+
+function addProject() {
+  const c = document.getElementById("projects-container");
+  const d = document.createElement("div");
+  d.className = "box";
+  d.innerHTML = `
+    <button type="button" class="remove-btn" onclick="this.parentElement.remove()">✖</button>
+    <input name="project_name[]" placeholder="Project Name">
+    <input name="project_start[]" placeholder="Start Date">
+    <input name="project_end[]" placeholder="End Date">
+    <textarea name="project_desc[]" placeholder="Project Description"></textarea>
+    <input name="project_github[]" placeholder="GitHub Link">
+  `;
+  c.appendChild(d);
+}
+
+function addEducation() {
+  const c = document.getElementById("education-container");
+  const d = document.createElement("div");
+  d.className = "box";
+  d.innerHTML = `
+    <button type="button" class="remove-btn" onclick="this.parentElement.remove()">✖</button>
+    <input name="edu_name[]" placeholder="Institution / Course">
+    <input name="edu_start[]" placeholder="Start Date">
+    <input name="edu_end[]" placeholder="End Date">
+    <textarea name="edu_desc[]" placeholder="Education Description"></textarea>
+  `;
+  c.appendChild(d);
+}
+</script>
+</body>
+</html>

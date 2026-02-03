@@ -1,0 +1,706 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>ATS-Friendly Portfolio Generator</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body { 
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #0a4d3c 0%, #1a5f4f 25%, #0d3d2f 50%, #1e6b56 75%, #0a4d3c 100%);
+      background-size: 400% 400%;
+      animation: gradientShift 15s ease infinite;
+      min-height: 100vh;
+      padding: 40px 20px;
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    @keyframes gradientShift {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      width: 600px;
+      height: 600px;
+      background: radial-gradient(circle, rgba(52, 211, 153, 0.15) 0%, transparent 70%);
+      border-radius: 50%;
+      top: -300px;
+      right: -300px;
+      animation: pulse 8s ease-in-out infinite;
+    }
+
+    body::after {
+      content: '';
+      position: fixed;
+      width: 500px;
+      height: 500px;
+      background: radial-gradient(circle, rgba(16, 185, 129, 0.12) 0%, transparent 70%);
+      border-radius: 50%;
+      bottom: -250px;
+      left: -250px;
+      animation: pulse 10s ease-in-out infinite reverse;
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(1) translate(0, 0); opacity: 1; }
+      50% { transform: scale(1.1) translate(20px, 20px); opacity: 0.8; }
+    }
+
+    h2 {
+      text-align: center;
+      color: #d1fae5;
+      font-size: 2.5em;
+      margin-bottom: 30px;
+      text-shadow: 
+        0 0 20px rgba(52, 211, 153, 0.5),
+        0 0 40px rgba(16, 185, 129, 0.3),
+        0 4px 8px rgba(0, 0, 0, 0.5);
+      letter-spacing: 2px;
+      position: relative;
+      z-index: 1;
+      animation: glow 3s ease-in-out infinite;
+    }
+
+    @keyframes glow {
+      0%, 100% { text-shadow: 0 0 20px rgba(52, 211, 153, 0.5), 0 0 40px rgba(16, 185, 129, 0.3), 0 4px 8px rgba(0, 0, 0, 0.5); }
+      50% { text-shadow: 0 0 30px rgba(52, 211, 153, 0.8), 0 0 60px rgba(16, 185, 129, 0.5), 0 4px 8px rgba(0, 0, 0, 0.5); }
+    }
+
+    #input-form {
+      max-width: 800px;
+      margin: 0 auto;
+      background: linear-gradient(145deg, rgba(17, 24, 39, 0.95) 0%, rgba(31, 41, 55, 0.92) 100%);
+      padding: 40px;
+      border-radius: 30px;
+      box-shadow: 
+        0 25px 70px rgba(0, 0, 0, 0.6),
+        0 0 0 1px rgba(52, 211, 153, 0.2),
+        inset 0 1px 0 rgba(52, 211, 153, 0.1);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(52, 211, 153, 0.15);
+      position: relative;
+      z-index: 1;
+      transform-style: preserve-3d;
+    }
+
+    #portfolio-output {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: none;
+    }
+
+    #input-form::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: linear-gradient(90deg, #10b981, #34d399, #6ee7b7, #34d399, #10b981);
+      background-size: 200% 100%;
+      border-radius: 30px 30px 0 0;
+      animation: shimmer 3s linear infinite;
+    }
+
+    @keyframes shimmer {
+      0% { background-position: -200% 0; }
+      100% { background-position: 200% 0; }
+    }
+
+    input, textarea { 
+      width: 100%;
+      margin-bottom: 15px;
+      padding: 14px 18px;
+      border: 2px solid rgba(52, 211, 153, 0.3);
+      border-radius: 12px;
+      font-size: 15px;
+      transition: all 0.3s ease;
+      background: rgba(17, 24, 39, 0.6);
+      color: #d1fae5;
+      box-shadow: 
+        0 4px 6px rgba(0, 0, 0, 0.3),
+        inset 0 1px 2px rgba(52, 211, 153, 0.1);
+      font-family: inherit;
+    }
+
+    input::placeholder, textarea::placeholder {
+      color: rgba(209, 250, 229, 0.5);
+    }
+
+    input:focus, textarea:focus {
+      outline: none;
+      background: rgba(17, 24, 39, 0.8);
+      border-color: #34d399;
+      box-shadow: 
+        0 0 0 3px rgba(52, 211, 153, 0.2),
+        0 8px 20px rgba(52, 211, 153, 0.3);
+    }
+
+    textarea { 
+      height: 90px;
+      resize: vertical;
+    }
+
+    button { 
+      padding: 12px 28px;
+      margin-top: 10px;
+      border: none;
+      border-radius: 12px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+      position: relative;
+      overflow: hidden;
+    }
+
+    button::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 0;
+      height: 0;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.3);
+      transform: translate(-50%, -50%);
+      transition: width 0.6s, height 0.6s;
+    }
+
+    button:hover::before {
+      width: 300px;
+      height: 300px;
+    }
+
+    h3 {
+      color: #6ee7b7;
+      margin: 30px 0 20px 0;
+      font-size: 1.6em;
+      text-shadow: 
+        0 2px 8px rgba(110, 231, 183, 0.4),
+        0 0 20px rgba(52, 211, 153, 0.2);
+      position: relative;
+      padding-left: 20px;
+    }
+
+    h3::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 6px;
+      height: 30px;
+      background: linear-gradient(180deg, #10b981, #34d399);
+      border-radius: 3px;
+      box-shadow: 0 0 10px rgba(52, 211, 153, 0.5);
+    }
+
+    .box {
+      background: linear-gradient(145deg, rgba(17, 24, 39, 0.5) 0%, rgba(31, 41, 55, 0.4) 100%);
+      border: 2px solid rgba(52, 211, 153, 0.25);
+      padding: 25px;
+      margin-bottom: 20px;
+      border-radius: 20px;
+      box-shadow: 
+        0 10px 30px rgba(0,0,0,0.4),
+        inset 0 1px 0 rgba(52, 211, 153, 0.1);
+      position: relative;
+      transition: all 0.3s ease;
+    }
+
+    .box:hover {
+      transform: translateY(-5px);
+      border-color: rgba(52, 211, 153, 0.4);
+      box-shadow: 
+        0 15px 40px rgba(0,0,0,0.5),
+        0 0 20px rgba(52, 211, 153, 0.2);
+    }
+
+    .remove-btn {
+      background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      cursor: pointer;
+      float: right;
+      border-radius: 10px;
+      font-weight: 600;
+      box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4);
+      z-index: 10;
+    }
+
+    .remove-btn:hover {
+      background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(239, 68, 68, 0.5);
+    }
+
+    button[type="button"]:not(.remove-btn):not(.back-btn) {
+      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+      color: white;
+      display: inline-block;
+      margin-right: 10px;
+    }
+
+    button[type="button"]:not(.remove-btn):not(.back-btn):hover {
+      background: linear-gradient(135deg, #059669 0%, #047857 100%);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(16, 185, 129, 0.4);
+    }
+
+    #generateBtn {
+      background: linear-gradient(135deg, #059669 0%, #047857 50%, #065f46 100%);
+      color: white;
+      width: 100%;
+      font-size: 18px;
+      padding: 16px;
+      margin-top: 20px;
+    }
+
+    #generateBtn:hover {
+      background: linear-gradient(135deg, #047857 0%, #065f46 50%, #064e3b 100%);
+      transform: translateY(-3px);
+      box-shadow: 
+        0 15px 40px rgba(5, 150, 105, 0.6),
+        0 0 30px rgba(16, 185, 129, 0.4);
+    }
+
+    .tip {
+      color: #a7f3d0;
+      font-size: 13px;
+      margin-top: -10px;
+      margin-bottom: 20px;
+      text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+    }
+
+    /* Portfolio Styles */
+    .portfolio-header {
+      background: linear-gradient(145deg, rgba(17, 24, 39, 0.95) 0%, rgba(31, 41, 55, 0.92) 100%);
+      padding: 60px 40px;
+      border-radius: 30px;
+      margin-bottom: 30px;
+      box-shadow: 
+        0 25px 70px rgba(0, 0, 0, 0.6),
+        0 0 0 1px rgba(52, 211, 153, 0.2);
+      border: 1px solid rgba(52, 211, 153, 0.15);
+      text-align: center;
+    }
+
+    .portfolio-header h1 {
+      color: #d1fae5;
+      font-size: 3em;
+      margin-bottom: 10px;
+      text-shadow: 0 0 20px rgba(52, 211, 153, 0.5);
+    }
+
+    .portfolio-header .title {
+      color: #6ee7b7;
+      font-size: 1.5em;
+      margin-bottom: 20px;
+    }
+
+    .portfolio-header .contact {
+      color: #a7f3d0;
+      font-size: 1.1em;
+      margin: 5px 0;
+    }
+
+    .portfolio-section {
+      background: linear-gradient(145deg, rgba(17, 24, 39, 0.95) 0%, rgba(31, 41, 55, 0.92) 100%);
+      padding: 40px;
+      border-radius: 30px;
+      margin-bottom: 30px;
+      box-shadow: 
+        0 25px 70px rgba(0, 0, 0, 0.6),
+        0 0 0 1px rgba(52, 211, 153, 0.2);
+      border: 1px solid rgba(52, 211, 153, 0.15);
+    }
+
+    .portfolio-section h2 {
+      color: #6ee7b7;
+      font-size: 2em;
+      margin-bottom: 25px;
+      text-shadow: 0 2px 8px rgba(110, 231, 183, 0.4);
+      padding-left: 20px;
+      position: relative;
+    }
+
+    .portfolio-section h2::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 8px;
+      height: 40px;
+      background: linear-gradient(180deg, #10b981, #34d399);
+      border-radius: 4px;
+      box-shadow: 0 0 15px rgba(52, 211, 153, 0.5);
+    }
+
+    .portfolio-item {
+      background: linear-gradient(145deg, rgba(17, 24, 39, 0.5) 0%, rgba(31, 41, 55, 0.4) 100%);
+      border: 2px solid rgba(52, 211, 153, 0.25);
+      padding: 25px;
+      margin-bottom: 20px;
+      border-radius: 20px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+      transition: all 0.3s ease;
+    }
+
+    .portfolio-item:hover {
+      transform: translateY(-5px);
+      border-color: rgba(52, 211, 153, 0.4);
+      box-shadow: 
+        0 15px 40px rgba(0,0,0,0.5),
+        0 0 20px rgba(52, 211, 153, 0.2);
+    }
+
+    .portfolio-item h3 {
+      color: #a7f3d0;
+      font-size: 1.4em;
+      margin-bottom: 10px;
+      padding-left: 0;
+    }
+
+    .portfolio-item h3::before {
+      display: none;
+    }
+
+    .portfolio-item .date {
+      color: #6ee7b7;
+      font-size: 0.9em;
+      margin-bottom: 15px;
+    }
+
+    .portfolio-item p {
+      color: #d1fae5;
+      line-height: 1.8;
+      margin-bottom: 10px;
+    }
+
+    .portfolio-item a {
+      color: #34d399;
+      text-decoration: none;
+      font-weight: 600;
+      transition: all 0.3s ease;
+    }
+
+    .portfolio-item a:hover {
+      color: #6ee7b7;
+      text-shadow: 0 0 10px rgba(52, 211, 153, 0.5);
+    }
+
+    .summary-text {
+      color: #d1fae5;
+      line-height: 1.8;
+      font-size: 1.1em;
+    }
+
+    .skills-list {
+      color: #d1fae5;
+      line-height: 2;
+      font-size: 1.1em;
+    }
+
+    .back-btn {
+      background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+      color: white;
+      padding: 14px 32px;
+      font-size: 16px;
+      margin-bottom: 30px;
+    }
+
+    .back-btn:hover {
+      background: linear-gradient(135deg, #4f46e5 0%, #4338ca 100%);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(99, 102, 241, 0.4);
+    }
+  </style>
+</head>
+<body>
+
+<h2>✨ Portfolio Generator</h2>
+
+<!-- Input Form -->
+<div id="input-form">
+  <div style="background: linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(52, 211, 153, 0.1) 100%); padding: 20px; border-radius: 15px; margin-bottom: 30px; border-left: 5px solid #10b981; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3); border: 1px solid rgba(52, 211, 153, 0.3);">
+    <h3 style="color: #6ee7b7; margin: 0 0 10px 0; padding: 0; font-size: 1.3em;">📊 Create Your Professional Portfolio</h3>
+    <p style="color: #d1fae5; margin: 5px 0; line-height: 1.6; font-size: 14px;">
+      ✓ <strong style="color: #a7f3d0;">Showcase your work</strong> in a stunning, professional format<br>
+      ✓ <strong style="color: #a7f3d0;">Highlight your projects</strong> and achievements<br>
+      ✓ <strong style="color: #a7f3d0;">Stand out</strong> with a modern, eye-catching design
+    </p>
+  </div>
+
+  <input id="name" placeholder="Full Name">
+  <input id="title" placeholder="Job Title / Professional Role">
+  <input id="location" placeholder="Location">
+  <input id="email" placeholder="Email">
+  <input id="phone" placeholder="Phone">
+
+  <textarea id="summary" placeholder="Professional Summary / About Me"></textarea>
+  <p class="tip">💡 <em>Tip: Share your passion, expertise, and what makes you unique</em></p>
+
+  <h3>Experience</h3>
+  <p class="tip">💼 <em>Highlight your key accomplishments and impact</em></p>
+  <div id="experience-container">
+    <div class="box">
+      <input class="exp-role" placeholder="Company / Role">
+      <input class="exp-start" placeholder="Start Date">
+      <input class="exp-end" placeholder="End Date">
+      <textarea class="exp-desc" placeholder="Experience Description"></textarea>
+    </div>
+  </div>
+  <button type="button" onclick="addExperience()">➕ Add Experience</button>
+
+  <h3 style="margin-top: 30px;">Skills</h3>
+  <p class="tip">🎯 <em>List your core competencies and technical skills</em></p>
+  <textarea id="skills" placeholder="Skills (e.g., Python, JavaScript, Project Management, UX Design)"></textarea>
+
+  <h3>Projects</h3>
+  <p class="tip">🚀 <em>Showcase your best work and achievements</em></p>
+  <div id="projects-container">
+    <div class="box">
+      <input class="project-name" placeholder="Project Name">
+      <input class="project-start" placeholder="Start Date">
+      <input class="project-end" placeholder="End Date">
+      <textarea class="project-desc" placeholder="Project Description"></textarea>
+      <input class="project-github" placeholder="GitHub / Project Link">
+    </div>
+  </div>
+  <button type="button" onclick="addProject()">➕ Add Project</button>
+
+  <h3>Education</h3>
+  <p class="tip">🎓 <em>Include your academic background and certifications</em></p>
+  <div id="education-container">
+    <div class="box">
+      <input class="edu-name" placeholder="Institution / Course">
+      <input class="edu-start" placeholder="Start Date">
+      <input class="edu-end" placeholder="End Date">
+      <textarea class="edu-desc" placeholder="Education Description"></textarea>
+    </div>
+  </div>
+  <button type="button" onclick="addEducation()">➕ Add Education</button>
+
+  <br><br>
+  <button id="generateBtn" onclick="generatePortfolio()">🎯 Generate Portfolio</button>
+</div>
+
+<!-- Portfolio Output -->
+<div id="portfolio-output">
+  <button class="back-btn" onclick="backToForm()">← Back to Edit</button>
+  
+  <div class="portfolio-header">
+    <h1 id="port-name"></h1>
+    <div class="title" id="port-title"></div>
+    <div class="contact" id="port-location"></div>
+    <div class="contact" id="port-email"></div>
+    <div class="contact" id="port-phone"></div>
+  </div>
+
+  <div class="portfolio-section" id="summary-section" style="display: none;">
+    <h2>About Me</h2>
+    <div class="summary-text" id="port-summary"></div>
+  </div>
+
+  <div class="portfolio-section" id="experience-section" style="display: none;">
+    <h2>Experience</h2>
+    <div id="port-experience"></div>
+  </div>
+
+  <div class="portfolio-section" id="skills-section" style="display: none;">
+    <h2>Skills</h2>
+    <div class="skills-list" id="port-skills"></div>
+  </div>
+
+  <div class="portfolio-section" id="projects-section" style="display: none;">
+    <h2>Projects</h2>
+    <div id="port-projects"></div>
+  </div>
+
+  <div class="portfolio-section" id="education-section" style="display: none;">
+    <h2>Education</h2>
+    <div id="port-education"></div>
+  </div>
+</div>
+
+<script>
+function addExperience() {
+  const container = document.getElementById("experience-container");
+  const div = document.createElement("div");
+  div.className = "box";
+  div.innerHTML = `
+    <button type="button" class="remove-btn" onclick="this.parentElement.remove()">✖</button>
+    <input class="exp-role" placeholder="Company / Role">
+    <input class="exp-start" placeholder="Start Date">
+    <input class="exp-end" placeholder="End Date">
+    <textarea class="exp-desc" placeholder="Experience Description"></textarea>
+  `;
+  container.appendChild(div);
+}
+
+function addProject() {
+  const container = document.getElementById("projects-container");
+  const div = document.createElement("div");
+  div.className = "box";
+  div.innerHTML = `
+    <button type="button" class="remove-btn" onclick="this.parentElement.remove()">✖</button>
+    <input class="project-name" placeholder="Project Name">
+    <input class="project-start" placeholder="Start Date">
+    <input class="project-end" placeholder="End Date">
+    <textarea class="project-desc" placeholder="Project Description"></textarea>
+    <input class="project-github" placeholder="GitHub / Project Link">
+  `;
+  container.appendChild(div);
+}
+
+function addEducation() {
+  const container = document.getElementById("education-container");
+  const div = document.createElement("div");
+  div.className = "box";
+  div.innerHTML = `
+    <button type="button" class="remove-btn" onclick="this.parentElement.remove()">✖</button>
+    <input class="edu-name" placeholder="Institution / Course">
+    <input class="edu-start" placeholder="Start Date">
+    <input class="edu-end" placeholder="End Date">
+    <textarea class="edu-desc" placeholder="Education Description"></textarea>
+  `;
+  container.appendChild(div);
+}
+
+function generatePortfolio() {
+  // Get basic info
+  document.getElementById('port-name').textContent = document.getElementById('name').value || 'Your Name';
+  document.getElementById('port-title').textContent = document.getElementById('title').value || 'Professional Title';
+  document.getElementById('port-location').textContent = document.getElementById('location').value || '';
+  document.getElementById('port-email').textContent = document.getElementById('email').value || '';
+  document.getElementById('port-phone').textContent = document.getElementById('phone').value || '';
+
+  // Summary
+  const summary = document.getElementById('summary').value;
+  if (summary) {
+    document.getElementById('summary-section').style.display = 'block';
+    document.getElementById('port-summary').textContent = summary;
+  } else {
+    document.getElementById('summary-section').style.display = 'none';
+  }
+
+  // Experience
+  const expContainer = document.getElementById('port-experience');
+  expContainer.innerHTML = '';
+  const expBoxes = document.querySelectorAll('#experience-container .box');
+  if (expBoxes.length > 0) {
+    document.getElementById('experience-section').style.display = 'block';
+    expBoxes.forEach(box => {
+      const role = box.querySelector('.exp-role').value;
+      const start = box.querySelector('.exp-start').value;
+      const end = box.querySelector('.exp-end').value;
+      const desc = box.querySelector('.exp-desc').value;
+      
+      if (role || desc) {
+        const item = document.createElement('div');
+        item.className = 'portfolio-item';
+        item.innerHTML = `
+          <h3>${role || 'Position'}</h3>
+          <div class="date">${start}${end ? ' - ' + end : ''}</div>
+          <p>${desc || ''}</p>
+        `;
+        expContainer.appendChild(item);
+      }
+    });
+  } else {
+    document.getElementById('experience-section').style.display = 'none';
+  }
+
+  // Skills
+  const skills = document.getElementById('skills').value;
+  if (skills) {
+    document.getElementById('skills-section').style.display = 'block';
+    document.getElementById('port-skills').textContent = skills;
+  } else {
+    document.getElementById('skills-section').style.display = 'none';
+  }
+
+  // Projects
+  const projContainer = document.getElementById('port-projects');
+  projContainer.innerHTML = '';
+  const projBoxes = document.querySelectorAll('#projects-container .box');
+  if (projBoxes.length > 0) {
+    document.getElementById('projects-section').style.display = 'block';
+    projBoxes.forEach(box => {
+      const name = box.querySelector('.project-name').value;
+      const start = box.querySelector('.project-start').value;
+      const end = box.querySelector('.project-end').value;
+      const desc = box.querySelector('.project-desc').value;
+      const link = box.querySelector('.project-github').value;
+      
+      if (name || desc) {
+        const item = document.createElement('div');
+        item.className = 'portfolio-item';
+        item.innerHTML = `
+          <h3>${name || 'Project'}</h3>
+          <div class="date">${start}${end ? ' - ' + end : ''}</div>
+          <p>${desc || ''}</p>
+          ${link ? `<p><a href="${link}" target="_blank">View Project →</a></p>` : ''}
+        `;
+        projContainer.appendChild(item);
+      }
+    });
+  } else {
+    document.getElementById('projects-section').style.display = 'none';
+  }
+
+  // Education
+  const eduContainer = document.getElementById('port-education');
+  eduContainer.innerHTML = '';
+  const eduBoxes = document.querySelectorAll('#education-container .box');
+  if (eduBoxes.length > 0) {
+    document.getElementById('education-section').style.display = 'block';
+    eduBoxes.forEach(box => {
+      const name = box.querySelector('.edu-name').value;
+      const start = box.querySelector('.edu-start').value;
+      const end = box.querySelector('.edu-end').value;
+      const desc = box.querySelector('.edu-desc').value;
+      
+      if (name || desc) {
+        const item = document.createElement('div');
+        item.className = 'portfolio-item';
+        item.innerHTML = `
+          <h3>${name || 'Institution'}</h3>
+          <div class="date">${start}${end ? ' - ' + end : ''}</div>
+          <p>${desc || ''}</p>
+        `;
+        eduContainer.appendChild(item);
+      }
+    });
+  } else {
+    document.getElementById('education-section').style.display = 'none';
+  }
+
+  // Show portfolio, hide form
+  document.getElementById('input-form').style.display = 'none';
+  document.getElementById('portfolio-output').style.display = 'block';
+  window.scrollTo(0, 0);
+}
+
+function backToForm() {
+  document.getElementById('input-form').style.display = 'block';
+  document.getElementById('portfolio-output').style.display = 'none';
+  window.scrollTo(0, 0);
+}
+</script>
+
+</body>
+</html>
